@@ -1,0 +1,125 @@
+
+[Name]=Spotify
+
+[BasedOn]=https://www.spotify.com/
+
+[IndexUrl]=http://localhost:9000/v1/search?q=%s&type=track
+
+[AlbumUrl]=http://localhost:9000/v1/albums/
+
+[WordSeparator]=+
+
+[IndexFormat]=%Type%|%_url%|%Album%|%Artist%|%Title%|%_preview%
+
+[SearchBy]=%title%
+
+[Encoding]útf-8
+
+[ParserScriptIndex]=...
+json "on"
+
+json_select_object "tracks"
+
+    json_foreach "items"
+
+        json_select_object "album"
+            json_select "album_type"
+            SayRest
+            say "|"
+            json_select "id"
+            SayRest
+            say "|"
+            json_select "name"
+            SayRest
+            say "|"
+        json_unselect_object
+
+        json_select_many "artists" "name" ","
+        SayRest
+        say "|"
+
+        json_select "name"
+        SayRest
+        say "|"
+
+        json_select "preview_url"
+        SayRest
+        say "|"
+
+        saynewline
+
+    json_foreach_end
+
+json_unselect_object
+
+
+[ParserScriptAlbum]=...
+json "on"
+
+#Album Artists
+outputto "albumartist"
+json_select_many "artists" "name" ","
+SayRest
+
+#Copyright
+outputto "copyright"
+json_select_many "copyrights" "text" "|"
+SayUntil "|"
+
+#ISRC
+outputto "isrc"
+json_select_object "external_ids"
+    json_select "upc"
+    SayRest
+json_unselect_object
+
+#Name
+outputto "Album"
+json_select "name"
+SayRest
+
+#Year
+outputto "year"
+json_select "release_date"
+SayNextNumber
+
+#Cover
+outputto "coverurl"
+json_select_many "images" "url" "|"
+SayUntil "|"
+
+#Tracks
+json_select "tracks"
+
+    json_foreach "items"
+
+        outputto "Artist"
+        json_select_many "artists" "name" ","
+        SayRest
+        say "|"
+
+        outputto "_LENGTH"
+        json_select "duration_ms"
+        SayRest
+        say "|"
+
+        outputto "tracks"
+        json_select "name"
+        SayRest
+        say "|"
+
+        outputto "discnumber"
+        json_select "disk_number"
+        SayRest
+        say "|"
+
+        outputto "Comment"
+        json_select "id"
+        say "https://play.spotify.com/track/"
+        SayRest
+        say "|"
+
+    json_foreach_end
+
+json_unselect_object
+
